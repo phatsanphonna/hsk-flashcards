@@ -21,3 +21,9 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+node_modules
+
+files/
+.firebase
+importData.ts
+app.ts

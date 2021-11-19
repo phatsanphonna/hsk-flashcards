@@ -1,30 +1,61 @@
 <template>
-  <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </div>
-  <router-view/>
+  <Loading :isLoading="isLoading" />
+
+  <Navbar />
+  <router-view />
 </template>
+
+<script lang="ts">
+import { defineComponent } from "vue";
+import { firebaseApp } from "@/firebase/app";
+import { queryUser } from "@/firebase/database";
+
+import Navbar from "@/components/Navbar.component.vue";
+import Loading from "@/components/Loading.component.vue";
+
+export default defineComponent({
+  name: "App",
+  components: { Navbar, Loading },
+  data() {
+    return {};
+  },
+  async created() {
+    this.$store.state.isLoading = true;
+
+    firebaseApp.auth().onAuthStateChanged(async (authUser) => {
+      if (authUser === null) {
+        await this.clearUserAuth();
+      } else {
+        await this.updateUserAuth(authUser);
+      }
+
+      this.$store.state.isLoading = false;
+    });
+  },
+  methods: {
+    updateUserAuth(authUser: any) {
+      this.$store.dispatch("setAuthUser", authUser);
+    },
+    clearUserAuth() {
+      this.$store.dispatch("clearAuthUser");
+    },
+  },
+});
+</script>
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Noto Sans SC", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+
+  background-color: #ffffff;
 }
 
-#nav {
-  padding: 30px;
-}
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
+.disable-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 </style>
