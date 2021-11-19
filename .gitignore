@@ -27,3 +27,5 @@ files/
 .firebase
 importData.ts
 app.ts
+.firebaserc
+firebase.json
