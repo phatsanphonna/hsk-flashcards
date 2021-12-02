@@ -3,4 +3,6 @@ export default interface Word {
     pinyin: string;
     english: string;
     level: number;
+    id: number;
+    [key: string]: any;
 }

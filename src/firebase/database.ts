@@ -2,8 +2,16 @@ import User from "@/types/user.type"
 import firebase from "firebase"
 import { db } from "./app"
 
-import * as HSK3 from '../files/HSK3.json'
-
+/*
+ * @ssuniie
+ *
+ * Query user from firestore database.
+ * if user exists, return user data.
+ * else, add new data to database and return user data.
+ * 
+ * @params {firebase.User} { uid, displayName, email, photoURL }
+ * @return {Promise<User | firebase.firestore.DocumentData | undefined>}
+ */
 export const queryUser = async ({ uid, displayName, email, photoURL }: firebase.User): Promise<User | firebase.firestore.DocumentData | undefined> => {
   try {
     const snapshot = await db.collection('users').where('uid', '==', uid).get()

@@ -1,46 +1,54 @@
 <template>
-  <Loading :isLoading="isLoading" />
+  <Loading />
+  <Error />
 
-  <Navbar />
-  <router-view />
+  <div class="container mx-auto">
+    <Navbar />
+    <router-view></router-view>
+    <Footer />
+  </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
+<script lang="ts" setup>
+import { useStore } from "vuex";
 import { firebaseApp } from "@/firebase/app";
-import { queryUser } from "@/firebase/database";
+import { queryUser } from "./firebase/database";
 
 import Navbar from "@/components/Navbar.component.vue";
+import Footer from "@/components/Footer.component.vue";
 import Loading from "@/components/Loading.component.vue";
+import Error from "@/components/Error.component.vue";
 
-export default defineComponent({
-  name: "App",
-  components: { Navbar, Loading },
-  data() {
-    return {};
-  },
-  async created() {
-    this.$store.state.isLoading = true;
+const store = useStore()
 
-    firebaseApp.auth().onAuthStateChanged(async (authUser) => {
-      if (authUser === null) {
-        await this.clearUserAuth();
+// Created
+async function created(): Promise<void> {
+  const updateUserAuth = async (authUser: any): Promise<void> => {
+    store.dispatch("setAuthUser", await queryUser(authUser));
+  }
+
+  const clearUserAuth = (): void => {
+    store.dispatch('clearAuthUser');
+  }
+
+  store.dispatch('setLoading', true);
+
+  firebaseApp.auth().onAuthStateChanged(async (authUser) => {
+    try {
+      if (!authUser) {
+        clearUserAuth();
       } else {
-        await this.updateUserAuth(authUser);
+        await updateUserAuth(authUser);
       }
-
-      this.$store.state.isLoading = false;
-    });
-  },
-  methods: {
-    updateUserAuth(authUser: any) {
-      this.$store.dispatch("setAuthUser", authUser);
-    },
-    clearUserAuth() {
-      this.$store.dispatch("clearAuthUser");
-    },
-  },
-});
+    } catch (err) {
+      console.error(err)
+      store.dispatch('setError', { isError: true, text: err });
+    } finally {
+      store.dispatch('setLoading', false);
+    }
+  })
+}
+created()
 </script>
 
 <style>

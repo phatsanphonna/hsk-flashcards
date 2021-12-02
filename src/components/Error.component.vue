@@ -1,17 +1,18 @@
 <template>
-  <div v-if="store.getters.isLoading" class="loading">
-    <font-awesome-icon icon="circle-notch" class="spinner" size="5x" />
+  <div v-if="store.getters.error.isError" class="error">
+    <font-awesome-icon icon="exclamation" size="5x" />
+    <p>{{ store.getters.error.text }}</p>
   </div>
 </template>
 
-<script lang='ts' setup>
+<script lang="ts" setup>
 import { useStore } from "vuex";
 
 const store = useStore()
 </script>
 
 <style scoped>
-.loading {
+.error {
   position: fixed;
   top: 0;
   height: 100vh;
@@ -24,11 +25,12 @@ const store = useStore()
 
   z-index: 99999;
 
-  @apply bg-green-800;
+  @apply bg-red-800;
   color: white;
 }
 
-.loading .spinner {
-  @apply animate-spin;
+.error p {
+  margin: 8px;
+  @apply text-lg;
 }
 </style>

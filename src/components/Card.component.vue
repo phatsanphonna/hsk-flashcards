@@ -1,32 +1,26 @@
 <template>
-  <div class="Card">
-    <h1>{{ word.chinese }}</h1>
-    <h3>{{ word.pinyin }}</h3>
-    <h5>{{ word.english }}</h5>
+  <div class="Card" v-if="Object.keys(word!).length !== 0">
+    <h1>{{ props.word!.chinese }}</h1>
+    <h3>{{ props.word!.pinyin }}</h3>
+    <h5>{{ props.word!.english }}</h5>
 
     <!-- for testing purpose -->
     <!-- <button @click="ImportData">Click</button> -->
-    <p v-if="word.chinese !== undefined && cardsLeft > 0">{{ cardsLeft }} Cards Left</p>
-    <p v-if="cardsLeft <= 0">No card left!</p>
+
+    <p
+      v-if="props.word!.chinese !== undefined && props.cardsLeft! > 0"
+    >{{ props.cardsLeft! }} Cards Left</p>
+    <p v-if="props.cardsLeft! <= 0">No card left!</p>
+  </div>
+  <div v-else class="Card">
+    <p>Select HSK Level</p>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
-import { importData } from "@/firebase/importData";
+<script lang="ts" setup>
+import { defineProps } from 'vue'
 
-export default defineComponent({
-  name: "Card",
-  props: {
-    word: Object,
-    cardsLeft: Number,
-  },
-  methods: {
-    async ImportData() {
-      await importData();
-    },
-  },
-});
+const props = defineProps({ word: Object, cardsLeft: Number })
 </script>
 
 <style scoped>
@@ -45,7 +39,7 @@ export default defineComponent({
 }
 
 .Card h1 {
-  @apply text-5xl font-bold;
+  @apply text-4xl font-bold;
 }
 
 .Card h3 {

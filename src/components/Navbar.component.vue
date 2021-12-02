@@ -1,21 +1,14 @@
 <template>
   <div class="Navbar disable-select">
-    <h1 @click="() => this.$router.push({ path: '/' })">{{ title }}</h1>
+    <h1 @click="() => $router.push({ path: '/' })">{{ title }}</h1>
 
-    <div
-      class="user"
-      v-if="Object.keys(this.$store.getters.authUser).length !== 0"
-    >
+    <div class="user" v-if="Object.keys($store.getters.authUser).length !== 0">
       <ul class="list">
         <li @click="handleSignOut" class="sign-out">
           <button>Sign Out</button>
         </li>
         <li>
-          <img
-            :src="this.$store.getters.authUser.photoURL"
-            @click="handleImgClick"
-            class="pfp"
-          />
+          <img :src="$store.getters.authUser.photoURL" @click="handleImgClick" class="pfp" />
         </li>
       </ul>
     </div>
@@ -23,56 +16,56 @@
     <div class="user" v-else>
       <ul class="list">
         <li @click="handleSignIn" class="sign-in">
-          <button>Sign In with Google</button>
+          <button>
+            <!-- Sign In with <font-awesome-icon icon="google" size="lg" /> -->
+            Sign In with Google
+          </button>
         </li>
       </ul>
     </div>
   </div>
 </template>
 
-<script lang='ts'>
-import { defineComponent } from "vue";
-
+<script lang="ts" setup>
+import { ref, onMounted, onDeactivated } from 'vue'
+import { useRouter } from "vue-router";
 import {
   getRedirectResult,
   signInWithRedirect,
-  signOut,
+  signOut
 } from "@/firebase/auth";
 
-export default defineComponent({
-  name: "Navbar",
-  data() {
-    return {
-      profilePicture: "",
-      title: "HSK Flashcards",
-      isPfpClick: false,
-    };
-  },
-  methods: {
-    handleImgClick() {
-      this.$router.push({ path: "/me" });
-    },
+const router = useRouter()
 
-    async handleSignIn() {
-      await signInWithRedirect();
-      await getRedirectResult();
-    },
+const isPfpClick = ref(false)
 
-    async handleSignOut() {
-      await signOut();
-      this.$router.push({ path: "/" });
-    },
-  },
-  mounted() {
-    setInterval(() => {
-      if (this.title === "HSK Flashcards") {
-        this.title = "HSK 抽认卡";
-      } else {
-        this.title = "HSK Flashcards";
-      }
-    }, 3000);
-  },
-});
+// Shuffle Title between English and Chinese
+const title = ref("HSK Flashcards")
+
+const shuffleTitle = setInterval(() => {
+  if (title.value === "HSK Flashcards") {
+    title.value = "HSK 抽认卡";
+  } else {
+    title.value = "HSK Flashcards";
+  }
+}, 3000)
+
+onMounted(() => shuffleTitle)
+onDeactivated(() => clearInterval(shuffleTitle))
+
+function handleImgClick(): void {
+  router.push({ path: "/me" });
+}
+
+async function handleSignIn(): Promise<void> {
+  await signInWithRedirect();
+  await getRedirectResult();
+}
+
+async function handleSignOut(): Promise<void> {
+  await signOut();
+  router.push({ path: "/" });
+}
 </script>
 
 <style scoped>

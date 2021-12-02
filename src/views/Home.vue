@@ -3,8 +3,7 @@
     <div class="level-option">
       <div class="select-subject">
         <select v-model="hskLevel" id="level-hsk">
-          <option disabled default>HSK Level</option>
-          <option :value="1">HSK 1</option>
+          <option disabled default="true" value="0">HSK Level</option>
           <option :value="2">HSK 2</option>
           <option :value="3">HSK 3</option>
           <option :value="4">HSK 4</option>
@@ -18,52 +17,55 @@
 
     <Card :word="words" :cardsLeft="cardsLeft" />
 
-    <button @click="randomData" v-if="allWords.length != 0" class="random">
-      Random New Word
-    </button>
-    <a
-      :href="`https://www.mdbg.net/chinese/dictionary?wdqb=${words.chinese}`"
-      rel="noopener noreferrer"
-      target="_blank"
-    >
-      <button v-if="allWords.length != 0" class="mdbg">
-        {{ words.chinese }} in MDBG Dictionary
-      </button>
-    </a>
+    <div v-if="allWords.length != 0" class="flex flex-col">
+      <button @click="randomData" v-if="allWords.length != 0" class="random">Random New Word</button>
+      <a
+        :href="`https://www.mdbg.net/chinese/dictionary?wdqb=${words.chinese}`"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        <button class="mdbg">{{ words.chinese }} in MDBG Dictionary</button>
+      </a>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
 import { db } from "@/firebase/app";
-import firebase from "firebase";
-import "firebase/firestore";
 
 import Card from "@/components/Card.component.vue";
+import Word from "@/types/word.type";
 
 export default defineComponent({
   name: "Home",
   components: { Card },
   data() {
     return {
-      words: {} as any,
+      words: {} as Word,
       allWords: [] as any,
+      alreadyRandomWords: [] as Word[],
       hskLevel: "0",
       cardsLeft: 20,
     };
   },
   methods: {
-    async fetchData() {
-      try {
-        if (this.hskLevel == this.words.level) {
-          if (this.cardsLeft > 0) {
-            alert("You choose the level same as before!");
-            return;
-          }
-        }
+    /*
+     * @ssuniie
+     *
+     * Get random words from firestore and random data.
+     *
+     * return {Promise<void>}
+     */
+    async fetchData(): Promise<void> {
+      if (this.hskLevel === "0") return;
 
-        this.$store.state.isLoading = true;
-        
+      if (Number(this.hskLevel) == this.words.level)
+        if (this.cardsLeft > 0) return;
+
+      this.$store.state.isLoading = true;
+
+      try {
         const totalWords = this.checkWords(this.hskLevel);
         const randomNum = this.getRandomIndices(totalWords);
 
@@ -77,32 +79,55 @@ export default defineComponent({
           })
         );
 
-        if (snapshot.length === 0) {
-          this.$store.state.isLoading = false;
-          return;
-        }
+        if (snapshot.length === 0) return;
+
+        this.allWords = [];
 
         snapshot.forEach((word) => {
           this.allWords.push(word.docs[0].data());
         });
 
-        this.randomData();
+        this.cardsLeft = 20;
+        this.alreadyRandomWords = [];
 
-        this.$store.state.isLoading = false;
+        this.randomData();
       } catch (err) {
         console.log(err);
+        this.$store.state.error = { isError: true, text: err };
+      } finally {
+        this.$store.state.isLoading = false;
       }
     },
 
-    randomData() {
+    /*
+     * @ssuniie
+     *
+     * Random data in list of allWords
+     *
+     * return {void}
+     */
+    randomData(): void {
       if (this.cardsLeft === 0) return;
 
       const randomNumber = Math.floor(Math.random() * this.allWords.length);
-      this.words = this.allWords[randomNumber];
-      this.cardsLeft--;
+
+      if (this.alreadyRandomWords.includes(this.allWords[randomNumber])) {
+        this.randomData();
+      } else {
+        this.words = this.allWords[randomNumber];
+        this.alreadyRandomWords.push(this.words);
+        this.cardsLeft--;
+      }
     },
 
-    getRandomIndices(words: number) {
+    /*
+     * @ssuniie
+     *
+     * Get random numbers to random data from firestore database
+     *
+     * return {number[]}
+     */
+    getRandomIndices(words: number): number[] {
       let a = [];
       for (let i = 0; i < 20; i++) {
         a.push(Math.round(Math.random() * words));
@@ -110,7 +135,15 @@ export default defineComponent({
       return a;
     },
 
-    checkWords(hskLevel: string) {
+    /*
+     * @ssuniie
+     *
+     * Get total words of HSK Level
+     *
+     * param {string} hskLevel
+     * return {number} 150 | 303 | 600 | 1200 | 2500 | 0
+     */
+    checkWords(hskLevel: string): 150 | 303 | 600 | 1200 | 2500 | 0 {
       switch (hskLevel) {
         case "1":
           return 150;
@@ -134,7 +167,7 @@ export default defineComponent({
 
 <style scoped>
 .Home {
-  height: calc(100vh - 3.5rem);
+  height: calc(100vh - 3.5rem - 3rem);
 
   display: flex;
   flex-direction: column;
@@ -152,6 +185,7 @@ export default defineComponent({
 
   margin: 8px;
 }
+
 .select-subject {
   @apply m-2;
 }

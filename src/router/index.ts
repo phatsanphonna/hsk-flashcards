@@ -21,13 +21,13 @@ const routes: Array<RouteRecordRaw> = [
     path: '/me',
     name: 'Me',
     component: () => import('../views/Me.vue'),
-    beforeEnter(to, from, next) {
-      if (Object.keys(store.state.user).length !== 0) {
-        next()
-      } else {
-        next({ path: '/' })
-      }
-    }
+    // beforeEnter(to, from, next) {
+    //   if (Object.keys(store.state.user).length !== 0) {
+    //     next()
+    //   } else {
+    //     next({ path: '/' })
+    //   }
+    // }
   }
 ]
 
