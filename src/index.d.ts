@@ -1,0 +1,1 @@
+declare module 'vue-ko-fi-button' { }

@@ -1,14 +1,24 @@
 <template>
   <div class="Navbar disable-select">
-    <h1 @click="() => $router.push({ path: '/' })">{{ title }}</h1>
+    <div class="title">
+      <router-link to="/">
+        <h1>{{ title }}</h1>
+      </router-link>
 
-    <div class="user" v-if="Object.keys($store.getters.authUser).length !== 0">
+      <p v-if="store.getters.isLoading">
+        <font-awesome-icon icon="circle-notch" size="lg" />
+      </p>
+    </div>
+
+    <div class="user" v-if="Object.keys(store.getters.authUser).length !== 0">
       <ul class="list">
         <li @click="handleSignOut" class="sign-out">
           <button>Sign Out</button>
         </li>
         <li>
-          <img :src="$store.getters.authUser.photoURL" @click="handleImgClick" class="pfp" />
+          <router-link to="/me">
+            <img :src="store.getters.authUser.photoURL" class="pfp" />
+          </router-link>
         </li>
       </ul>
     </div>
@@ -17,8 +27,9 @@
       <ul class="list">
         <li @click="handleSignIn" class="sign-in">
           <button>
-            <!-- Sign In with <font-awesome-icon icon="google" size="lg" /> -->
-            Sign In with Google
+            Sign In with
+            <font-awesome-icon :icon="['fab', 'google']" size="md" />
+            <!-- Sign In with Google -->
           </button>
         </li>
       </ul>
@@ -29,12 +40,14 @@
 <script lang="ts" setup>
 import { ref, onMounted, onDeactivated } from 'vue'
 import { useRouter } from "vue-router";
+import { useStore } from 'vuex';
 import {
   getRedirectResult,
   signInWithRedirect,
   signOut
 } from "@/firebase/auth";
 
+const store = useStore()
 const router = useRouter()
 
 const isPfpClick = ref(false)
@@ -53,8 +66,14 @@ const shuffleTitle = setInterval(() => {
 onMounted(() => shuffleTitle)
 onDeactivated(() => clearInterval(shuffleTitle))
 
+// eslint-disable-next-line
 function handleImgClick(): void {
   router.push({ path: "/me" });
+}
+
+// eslint-disable-next-line
+function handleTitleClick() {
+  router.push({ path: '/' })
 }
 
 async function handleSignIn(): Promise<void> {
@@ -80,8 +99,16 @@ async function handleSignOut(): Promise<void> {
   padding: 20px;
 }
 
-.Navbar h1 {
+.Navbar .title {
   @apply font-bold hover:text-green-500 transition-all;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.title p {
+  @apply ml-2 animate-spin text-green-700;
 }
 
 .pfp {
@@ -106,8 +133,8 @@ async function handleSignOut(): Promise<void> {
 }
 
 .list .sign-in {
-  @apply py-1 px-2 bg-green-500 text-white rounded-md shadow-lg;
-  @apply hover:bg-green-700 transition-all;
+  @apply py-1 px-2 bg-green-700 text-white rounded-md shadow-lg;
+  @apply hover:bg-yellow-600 transition-all;
 }
 
 .list .sign-out {

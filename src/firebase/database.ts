@@ -2,14 +2,12 @@ import User from "@/types/user.type"
 import firebase from "firebase"
 import { db } from "./app"
 
-/*
- * @ssuniie
- *
+/**
  * Query user from firestore database.
  * if user exists, return user data.
  * else, add new data to database and return user data.
  * 
- * @params {firebase.User} { uid, displayName, email, photoURL }
+ * @param {firebase.User} User user information from firebase authentication
  * @return {Promise<User | firebase.firestore.DocumentData | undefined>}
  */
 export const queryUser = async ({ uid, displayName, email, photoURL }: firebase.User): Promise<User | firebase.firestore.DocumentData | undefined> => {
@@ -28,6 +26,6 @@ export const queryUser = async ({ uid, displayName, email, photoURL }: firebase.
       return snapshot.docs[0].data()
     }
   } catch (err) {
-    console.log(err)
+    console.error(err)
   }
 }

@@ -1,6 +1,10 @@
 <template>
-  <Loading />
+  <!-- <Loading /> -->
   <Error />
+
+  <Transition name="fade">
+    <KoFiButton username="ssuniie" color="rgba(5, 150, 105)" title="Donate" class="ko-fi" />
+  </Transition>
 
   <div class="container mx-auto">
     <Navbar />
@@ -18,10 +22,15 @@ import Navbar from "@/components/Navbar.component.vue";
 import Footer from "@/components/Footer.component.vue";
 import Loading from "@/components/Loading.component.vue";
 import Error from "@/components/Error.component.vue";
+import KoFiButton from 'vue-ko-fi-button';
 
 const store = useStore()
 
-// Created
+/**
+ * functions that run when App is created
+ * 
+ * @returns {Promise<void>}
+ */
 async function created(): Promise<void> {
   const updateUserAuth = async (authUser: any): Promise<void> => {
     store.dispatch("setAuthUser", await queryUser(authUser));
@@ -32,7 +41,6 @@ async function created(): Promise<void> {
   }
 
   store.dispatch('setLoading', true);
-
   firebaseApp.auth().onAuthStateChanged(async (authUser) => {
     try {
       if (!authUser) {
@@ -48,6 +56,7 @@ async function created(): Promise<void> {
     }
   })
 }
+
 created()
 </script>
 
@@ -65,5 +74,13 @@ created()
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+.ko-fi {
+  z-index: 90;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  margin: 20px;
 }
 </style>
